@@ -9,7 +9,7 @@ import InsightsPanel from '../components/InsightsPanel'
 import SuggestionsPanel from '../components/SuggestionsPanel'
 import ScoreBreakdownChart from '../components/ScoreBreakdownChart'
 
-const API_URL = 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 const fields = [
   { key: 'sleep_hours',        label: 'Sleep Hours',        icon: Moon,       min: 2,  max: 12,  step: 0.5, default: 7 },
