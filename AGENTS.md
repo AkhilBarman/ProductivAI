@@ -635,15 +635,15 @@ The following limitations were identified during the Phase 1 audit and implement
 3. **No Automated Test Suite**:
    - There are currently no automated unit tests (`pytest` for backend, `vitest` or `playwright` for frontend).
    - *Remediation*: Add `pytest` test cases covering `/predict` validation, schema boundaries, and model loading; add component smoke tests in Vite.
-4. **ESLint 9 React 19 JSX False Positives**:
-   - Running `npm run lint` generates unused variable errors for `<motion.div>` and `Icon` references due to ESLint 9 flat config not recognizing JSX pragma scope without specialized plugins.
-   - *Remediation*: Refine `frontend/eslint.config.js` to properly support React 19 JSX transform and Framer Motion components.
+4. **ESLint 9 React 19 JSX Configuration** `[RESOLVED]`:
+   - Formerly produced false-positive errors on `<motion.div>` and destructured `Icon` arguments.
+   - *Status*: Resolved — refined `frontend/eslint.config.js` and removed unused variables; `npm run lint` now passes with 0 errors and 0 warnings.
 5. **Heuristic Explanations vs. True Model Explainability**:
    - `compute_breakdown()`, `generate_insights()`, and `generate_suggestions()` use handcrafted mathematical heuristics rather than model feature importances (e.g., Tree SHAP or permutation importances).
    - *Remediation*: Plan a migration in future phases to extract feature contributions directly from the Random Forest model.
-6. **Frontend Bundle Chunk Size**:
-   - Vite build issues a warning that the main JavaScript chunk is $\approx 760\text{ kB}$ (gzip $\approx 230\text{ kB}$).
-   - *Remediation*: Introduce route-based lazy loading (`React.lazy()` / dynamic `import()`) for `AnalysisPage` and `AboutPage` to split Recharts and Framer Motion across distinct chunks.
+6. **Frontend Bundle Chunk Size & Code-Splitting** `[RESOLVED]`:
+   - Formerly bundled all pages and charts into a single monolithic $\approx 760\text{ kB}$ chunk.
+   - *Status*: Resolved — route-based code-splitting implemented via `React.lazy()` for `DashboardPage`, `AnalysisPage`, and `AboutPage`; main entry chunk reduced to $234\text{ kB}$ (gzip $75\text{ kB}$), eliminating the Vite chunk size warning.
 7. **FastAPI Deprecated Startup Event**:
    - `backend/main.py` uses `@app.on_event("startup")` which is deprecated in modern FastAPI.
    - *Remediation*: Upgrade to FastAPI's recommended `lifespan` context manager.

@@ -40,7 +40,6 @@ export default function AnalysisPage() {
   }
 
   const tickStyle = { fill: 'var(--text-muted)', fontSize: 11 }
-  const trackFill = 'var(--input-bg)'
 
   const charts = [
     {
