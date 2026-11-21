@@ -100,6 +100,7 @@ The following tree represents the **exact, verified** file and directory structu
 ```
 ProductivAI/
 ├── .gitignore                      # Git ignore rules for node_modules, .venv, dist, caches, logs
+├── .npmrc                          # NPM configuration ensuring legacy-peer-deps for CI/CD builds
 ├── AGENTS.md                       # Permanent AI coding agent development instructions (THIS FILE)
 ├── README.md                       # User-facing project documentation, overview, and screenshots
 ├── backend/
@@ -114,6 +115,7 @@ ProductivAI/
 └── frontend/
     ├── .env.example                # Example environment variable file for VITE_API_URL
     ├── .gitignore                  # Frontend-specific build and dependency ignore rules
+    ├── .npmrc                      # Frontend npm configuration (legacy-peer-deps for Vite 8 / Tailwind 4)
     ├── eslint.config.js            # ESLint 9 flat configuration with React hooks & refresh rules
     ├── index.html                  # HTML5 application shell with viewport meta and Inter font
     ├── package.json                # Frontend npm configuration, build scripts, and dependencies
