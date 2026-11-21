@@ -103,6 +103,17 @@ ProductivAI/
 ├── .npmrc                          # NPM configuration ensuring legacy-peer-deps for CI/CD builds
 ├── AGENTS.md                       # Permanent AI coding agent development instructions (THIS FILE)
 ├── README.md                       # User-facing project documentation, overview, and screenshots
+├── agent-skill/                    # Agensi.io & Agent Skills open-standard AI skill package
+│   ├── SKILL.md                    # Core skill specification with YAML frontmatter & conversational workflows
+│   ├── README.md                   # Skill documentation, installation, and usage instructions
+│   ├── scripts/
+│   │   └── evaluate_routine.py     # Standalone Python CLI engine (Cloud API & offline local mode)
+│   ├── references/
+│   │   ├── scoring_rubric.md       # Behavioral metrics, coefficients, ranges & interpretation
+│   │   ├── routine_archetypes.md   # Reference schedules for students, engineers, and exam crunch
+│   │   └── troubleshooting_guide.md# Root-cause diagnostic trees for procrastination & screen addiction
+│   └── assets/
+│       └── report_template.md      # Clean markdown templates for daily and weekly reports
 ├── backend/
 │   ├── dataset/
 │   │   ├── generate_dataset.py     # Deterministic generator script creating 50,000 synthetic records
@@ -706,10 +717,11 @@ The following phases are planned for ProductivAI. Future AI agents must treat ro
 - Integrate true model explainability (SHAP / TreeExplainer) to dynamically derive factor contributions.
 - Develop an AI productivity coach providing tailored weekly synthesis reports.
 
-### Phase 5: Agent Skill Packaging & Marketplace Preparation
-- Package ProductivAI analytical capabilities as an Antigravity agent skill.
-- Expose structured tool schemas for external coding and productivity agents.
-- Prepare automated continuous integration (CI) workflows for testing and container deployment.
+### Phase 5: Agent Skill Packaging & Marketplace Preparation `[COMPLETED]`
+- Packaged ProductivAI analytical capabilities as an open-standard `SKILL.md` skill in `agent-skill/`.
+- Conformed to Agensi.io, Claude Code, Cursor, Codex, and Gemini CLI specifications.
+- Implemented 3-tier capability hierarchy (Conversational -> Local Script -> Live Cloud Model).
+- Created diagnostic troubleshooting guides, routine archetypes, and standalone Python evaluation engine.
 
 ---
 

@@ -36,13 +36,13 @@ const PRESETS = [
 ]
 
 const fields = [
-  { key: 'sleep_hours',        label: 'Sleep Hours',        icon: Moon,       min: 2,  max: 12,  step: 0.5, default: 7,  hint: 'Ideal: 7–9h' },
-  { key: 'study_hours',        label: 'Study Hours',        icon: BookOpen,   min: 0,  max: 14,  step: 0.5, default: 4,  hint: 'Target: 4–8h' },
-  { key: 'exercise_minutes',   label: 'Exercise (min)',     icon: Dumbbell,   min: 0,  max: 120, step: 5,   default: 30, hint: 'Target: 30–60m' },
-  { key: 'screen_time_hours',  label: 'Screen Time (hrs)',  icon: Monitor,    min: 0,  max: 16,  step: 0.5, default: 4,  hint: 'Keep ≤ 6h' },
-  { key: 'social_media_hours', label: 'Social Media (hrs)', icon: Smartphone, min: 0,  max: 8,   step: 0.5, default: 2,  hint: 'Keep ≤ 2h' },
-  { key: 'breaks_taken',       label: 'Breaks Taken',       icon: Coffee,     min: 0,  max: 10,  step: 1,   default: 3,  hint: 'Optimal: 3–5' },
-  { key: 'mood_level',         label: 'Mood Level',         icon: Smile,      min: 1,  max: 10,  step: 1,   default: 7,  hint: 'Scale: 1–10' },
+  { key: 'sleep_hours',        label: 'Sleep Hours',        icon: Moon,       min: 2,  max: 12,  step: 0.5, default: 7,  hint: 'Ideal: 7–9h',  desc: 'Actual sleep duration' },
+  { key: 'study_hours',        label: 'Study Hours',        icon: BookOpen,   min: 0,  max: 14,  step: 0.5, default: 4,  hint: 'Target: 4–8h', desc: 'Active focused work/study' },
+  { key: 'exercise_minutes',   label: 'Exercise (min)',     icon: Dumbbell,   min: 0,  max: 120, step: 5,   default: 30, hint: 'Target: 30–60m', desc: 'Cardio, gym, or brisk walk' },
+  { key: 'screen_time_hours',  label: 'Screen Time (hrs)',  icon: Monitor,    min: 0,  max: 16,  step: 0.5, default: 4,  hint: 'Keep ≤ 5h',    desc: 'Passive entertainment & gaming' },
+  { key: 'social_media_hours', label: 'Social Media (hrs)', icon: Smartphone, min: 0,  max: 8,   step: 0.5, default: 2,  hint: 'Keep ≤ 1.5h',  desc: 'Feeds, reels & browsing' },
+  { key: 'breaks_taken',       label: 'Breaks Taken',       icon: Coffee,     min: 0,  max: 10,  step: 1,   default: 3,  hint: 'Optimal: 3–5', desc: '5–15 min off-screen pauses' },
+  { key: 'mood_level',         label: 'Mood & Energy',      icon: Smile,      min: 1,  max: 10,  step: 1,   default: 7,  hint: 'Scale: 1–10',  desc: 'Subjective mental alertness' },
 ]
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } }
@@ -304,23 +304,26 @@ export default function DashboardPage() {
           marginBottom: 28,
         }}
       >
-        {fields.map(({ key, label, icon: Icon, min, max, step, hint }) => (
+        {fields.map(({ key, label, icon: Icon, min, max, step, hint, desc }) => (
           <motion.div
             key={key}
             variants={fadeUp}
             className="glass-card"
             style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)' }}>
-                <Icon size={15} color="var(--primary)" />
-                <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {label}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)' }}>
+                  <Icon size={15} color="var(--primary)" />
+                  <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {label}
+                  </span>
+                </div>
+                <span style={{ fontSize: 10, color: 'var(--text-subtle)', fontWeight: 500 }}>
+                  {hint}
                 </span>
               </div>
-              <span style={{ fontSize: 10, color: 'var(--text-subtle)', fontWeight: 500 }}>
-                {hint}
-              </span>
+              <p style={{ fontSize: 11, color: 'var(--text-subtle)', margin: 0 }}>{desc}</p>
             </div>
 
             <input

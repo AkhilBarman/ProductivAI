@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Brain, Code2, BarChart3, Target, Layers, Cpu, Palette, GitBranch } from 'lucide-react'
+import { Brain, Code2, BarChart3, Target, Layers, Cpu, Palette, GitBranch, Bot } from 'lucide-react'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
@@ -83,6 +83,18 @@ export default function AboutPage() {
           ))}
         </div>
       </div>
+
+      <motion.div initial="hidden" animate="show" className="glass-card" style={{ padding: 28, marginBottom: 36 }}>
+        <motion.h2 variants={fadeUp} custom={0} style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 14px 0' }}>
+          <Bot size={20} color="#3b82f6" /> Agensi.io AI Agent Skill
+        </motion.h2>
+        <motion.p variants={fadeUp} custom={1} style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.75, margin: '0 0 10px 0' }}>
+          ProductivAI is also packaged as an open-standard AI agent skill for the <strong>Agensi.io</strong> marketplace, Claude Code, Cursor, Codex, and Gemini CLI.
+        </motion.p>
+        <motion.p variants={fadeUp} custom={2} style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.75, margin: 0 }}>
+          Through your AI assistant, you can converse naturally: <em>&ldquo;Analyze how productive I was today&rdquo;</em>, <em>&ldquo;I keep getting distracted by Instagram&rdquo;</em>, or <em>&ldquo;Build me a realistic study schedule for tomorrow&rdquo;</em>.
+        </motion.p>
+      </motion.div>
 
       <motion.div initial="hidden" animate="show" className="glass-card" style={{ padding: 28 }}>
         <motion.h2 variants={fadeUp} custom={0} style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 14px 0' }}>
