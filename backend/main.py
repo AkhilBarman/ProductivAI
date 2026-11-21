@@ -10,7 +10,12 @@ import numpy as np
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import List, Dict
+from typing import List, Dict, Optional
+
+try:
+    from backend.database import init_db, insert_record, fetch_all_records, compute_stats, delete_all_records
+except ImportError:
+    from database import init_db, insert_record, fetch_all_records, compute_stats, delete_all_records
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -64,6 +69,8 @@ def load_model():
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
     print("✅ Model loaded successfully")
+    init_db()
+    print("✅ Database initialized successfully")
 
 # ---------------------------------------------------------------------------
 # Schemas
@@ -229,10 +236,39 @@ def predict(data: PredictionInput):
     else:
         category = "Low Productivity"
 
+    insights = generate_insights(data, score)
+    suggestions = generate_suggestions(data, score)
+    breakdown = compute_breakdown(data)
+
+    # Automatically save prediction record to SQLite history
+    try:
+        insert_record(data.dict(), score, category, breakdown)
+    except Exception as e:
+        print(f"⚠️ Failed to save history record: {e}")
+
     return PredictionOutput(
         productivity_score=score,
         category=category,
-        insights=generate_insights(data, score),
-        suggestions=generate_suggestions(data, score),
-        score_breakdown=compute_breakdown(data),
+        insights=insights,
+        suggestions=suggestions,
+        score_breakdown=breakdown,
     )
+
+
+@app.get("/history")
+def get_history(limit: int = 50):
+    """Retrieve historical prediction sessions and aggregate statistics."""
+    records = fetch_all_records(limit=limit)
+    stats = compute_stats()
+    return {
+        "status": "ok",
+        "records": records,
+        "stats": stats,
+    }
+
+
+@app.delete("/history")
+def clear_history():
+    """Clear all historical prediction records."""
+    delete_all_records()
+    return {"status": "ok", "message": "History cleared"}

@@ -109,6 +109,7 @@ ProductivAI/
 │   │   └── productivity_dataset.csv# Pre-generated 50K CSV dataset with routine features and target score
 │   ├── models/
 │   │   └── productivity_model.pkl  # Trained, serialized Scikit-learn RandomForestRegressor model
+│   ├── database.py                 # SQLite session storage, trend query operations, aggregate statistics
 │   ├── main.py                     # FastAPI application: CORS, schemas, endpoints, insight rules
 │   ├── model_training.py           # Training pipeline: trains LinearRegression & RandomForest, saves best
 │   └── requirements.txt            # Backend Python dependencies (fastapi, uvicorn, scikit-learn, etc.)
@@ -146,7 +147,8 @@ ProductivAI/
         └── pages/
             ├── AboutPage.jsx       # Educational page explaining the ML approach and tech stack
             ├── AnalysisPage.jsx    # Metric-by-metric data visualizer (bars, pies, radials)
-            └── DashboardPage.jsx   # Primary dashboard: 7 input cards, predict trigger, and result panels
+            ├── DashboardPage.jsx   # Primary dashboard: 7 input cards, presets, predict trigger, and result panels
+            └── HistoryPage.jsx     # Longitudinal productivity tracking, trend charts, session logs, and exports
 ```
 
 ---
@@ -198,16 +200,46 @@ ProductivAI/
 
 ### Documented API Endpoints
 
-#### `GET /`
-- **Purpose**: Service health check and verification endpoint.
-- **Request**: No parameters.
+#### `GET /history`
+- **Purpose**: Fetch historical prediction records and aggregate statistics.
+- **Query Parameters**: `limit` (int, default 50).
 - **Response**:
   ```json
   {
     "status": "ok",
-    "message": "AI Productivity Analyzer API is running"
+    "records": [
+      {
+        "id": 1,
+        "timestamp": "Nov 22, 2026 • 01:03 AM",
+        "sleep_hours": 8.0,
+        "study_hours": 6.0,
+        "exercise_minutes": 45.0,
+        "screen_time_hours": 4.0,
+        "social_media_hours": 1.0,
+        "breaks_taken": 4,
+        "mood_level": 8,
+        "productivity_score": 74,
+        "category": "Moderate Productivity",
+        "score_breakdown": { "sleep": 22, "study": 21, "exercise": 7, "screen_time": -3, "social_media": -1, "mood": 16 }
+      }
+    ],
+    "stats": {
+      "total_records": 1,
+      "average_score": 74.0,
+      "highest_score": 74,
+      "lowest_score": 74,
+      "high_count": 0,
+      "moderate_count": 1,
+      "low_count": 0,
+      "high_rate": 0
+    }
   }
   ```
+
+#### `DELETE /history`
+- **Purpose**: Clear all historical prediction sessions.
+- **Response**: `{"status": "ok", "message": "History cleared"}`
+
 
 #### `POST /predict`
 - **Purpose**: Primary inference and analysis endpoint.
@@ -647,8 +679,9 @@ The following limitations were identified during the Phase 1 audit and implement
 7. **FastAPI Deprecated Startup Event**:
    - `backend/main.py` uses `@app.on_event("startup")` which is deprecated in modern FastAPI.
    - *Remediation*: Upgrade to FastAPI's recommended `lifespan` context manager.
-8. **Lack of Server-Side Data Persistence**:
-   - Routine data is only stored in browser `localStorage`. Closing the browser or clearing cache loses all history.
+8. **Server-Side Data Persistence** `[RESOLVED]`:
+   - Formerly stored only the single latest routine in browser `localStorage`.
+   - *Status*: Resolved — implemented built-in SQLite persistence (`backend/database.py`) logging sessions, scores, and breakdowns with `GET /history` and `DELETE /history` endpoints.
 
 ---
 
@@ -656,18 +689,16 @@ The following limitations were identified during the Phase 1 audit and implement
 
 The following phases are planned for ProductivAI. Future AI agents must treat roadmap items as **future targets**, not as already implemented features:
 
-### Phase 2: UI/UX Refinement & Design System
-- Standardize design tokens across Tailwind CSS v4 and CSS custom properties.
-- Implement code-splitting and dynamic imports to reduce bundle size below 500 kB.
-- Fix ESLint configuration for React 19 JSX and Framer Motion.
-- Enhance mobile navigation and touch interactions.
-- Provide accessible skeleton loaders and empty states for the dashboard.
+### Phase 2: UI/UX Refinement & Design System `[COMPLETED]`
+- Standardized design tokens across Tailwind CSS v4 and CSS custom properties.
+- Implemented code-splitting and dynamic imports, reducing bundle size below 250 kB.
+- Resolved ESLint configuration for React 19 JSX and Framer Motion.
+- Added accessible skeleton loaders, presets, and empty states.
 
-### Phase 3: Productivity History, Database & Longitudinal Trends
-- Introduce a relational database (SQLite for local dev, PostgreSQL for production via SQLAlchemy or SQLModel).
-- Implement user sessions / authentication (JWT or OAuth2).
-- Create a historical time-series view tracking productivity scores across days, weeks, and months.
-- Add multi-day trend graphs and routine consistency indicators.
+### Phase 3: Productivity History, Database & Longitudinal Trends `[COMPLETED]`
+- Introduced zero-dependency SQLite database for local and server session logging.
+- Created `/history` view tracking productivity scores, area trendlines, and habit logs.
+- Added summary KPI metrics, JSON export, and 1-click routine loading back into dashboard.
 
 ### Phase 4: Goals, Planner, Productivity Coach & Intelligent Recommendations
 - Add routine target setting (e.g., "Aim for 8h sleep and $<3\text{h}$ screen time").

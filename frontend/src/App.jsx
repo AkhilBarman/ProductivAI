@@ -6,8 +6,9 @@ import Sidebar from './components/Sidebar'
 import ThemeToggle from './components/ThemeToggle'
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
-const AnalysisPage = lazy(() => import('./pages/AnalysisPage'))
-const AboutPage = lazy(() => import('./pages/AboutPage'))
+const HistoryPage   = lazy(() => import('./pages/HistoryPage'))
+const AnalysisPage  = lazy(() => import('./pages/AnalysisPage'))
+const AboutPage     = lazy(() => import('./pages/AboutPage'))
 
 function RouteFallback() {
   return (
@@ -111,6 +112,7 @@ export default function App() {
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/history" element={<HistoryPage />} />
             <Route path="/analysis" element={<AnalysisPage />} />
             <Route path="/about" element={<AboutPage />} />
           </Routes>

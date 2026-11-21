@@ -6,6 +6,9 @@ venv/
 .venv/
 .env
 
+# Database
+backend/database/*.db
+
 # Node
 frontend/node_modules/
 frontend/dist/

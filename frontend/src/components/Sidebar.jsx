@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, BarChart3, Info, Brain, ChevronLeft } from 'lucide-react'
+import { LayoutDashboard, History, BarChart3, Info, Brain, ChevronLeft } from 'lucide-react'
 
 const links = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/history', icon: History, label: 'History' },
   { to: '/analysis', icon: BarChart3, label: 'Analysis' },
   { to: '/about', icon: Info, label: 'About' },
 ]
