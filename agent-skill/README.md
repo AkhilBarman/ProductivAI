@@ -60,7 +60,7 @@ ProductivAI is designed to never fail even without internet access or API creden
 
 1. **Tier 1 (Instant Conversational)**: The agent uses native reasoning and the provided `references/` guides to troubleshoot habits, build schedules, and diagnose focus issues with **zero external tools**.
 2. **Tier 2 (Local Mathematical Engine)**: Using `scripts/evaluate_routine.py --offline`, the agent computes exact machine-learning weights locally with standard Python (no pip packages required).
-3. **Tier 3 (Live Cloud ML Model)**: Connects to the live FastAPI backend (`https://productivai.onrender.com`) to evaluate predictions through the cloud Random Forest regressor and access historical logs.
+3. **Tier 3 (Live Cloud ML Model)**: Connects to the live FastAPI backend (`https://productivai.onrender.com`) to evaluate predictions through the cloud Scikit-learn regression model and access historical logs.
 
 ---
 

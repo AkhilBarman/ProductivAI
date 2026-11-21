@@ -37,16 +37,72 @@ DEFAULT_ROUTINE = {
     "mood_level": 7,
 }
 
+VALIDATION_BOUNDS = {
+    "sleep_hours": (0.0, 16.0),
+    "study_hours": (0.0, 16.0),
+    "exercise_minutes": (0.0, 240.0),
+    "screen_time_hours": (0.0, 24.0),
+    "social_media_hours": (0.0, 24.0),
+    "breaks_taken": (0, 20),
+    "mood_level": (1, 10),
+}
 
-def local_predict(routine: dict) -> dict:
+
+def validate_and_sanitize(routine: dict) -> tuple:
+    """Validate, sanitize bounds, and detect impossible time contradictions."""
+    sanitized = {}
+    warnings = []
+
+    for key, (min_val, max_val) in VALIDATION_BOUNDS.items():
+        val = routine.get(key, DEFAULT_ROUTINE[key])
+        try:
+            val = float(val) if isinstance(min_val, float) else int(val)
+        except (ValueError, TypeError):
+            val = DEFAULT_ROUTINE[key]
+            warnings.append(f"Invalid non-numeric value for {key}; defaulted to {val}.")
+
+        if val < min_val:
+            warnings.append(f"{key} ({val}) was below minimum {min_val}; clamped to {min_val}.")
+            val = min_val
+        elif val > max_val:
+            warnings.append(f"{key} ({val}) exceeded realistic maximum {max_val}; clamped to {max_val}.")
+            val = max_val
+
+        sanitized[key] = val
+
+    # Cross-metric validation: social media cannot exceed total screen time
+    if sanitized["social_media_hours"] > sanitized["screen_time_hours"]:
+        warnings.append(
+            f"Social media ({sanitized['social_media_hours']}h) exceeded total recreational screen time ({sanitized['screen_time_hours']}h). "
+            f"Recreational screen time adjusted to match {sanitized['social_media_hours']}h."
+        )
+        sanitized["screen_time_hours"] = sanitized["social_media_hours"]
+
+    # Contradictory check: total hours in a day
+    total_hours = (
+        sanitized["sleep_hours"]
+        + sanitized["study_hours"]
+        + sanitized["screen_time_hours"]
+        + (sanitized["exercise_minutes"] / 60.0)
+    )
+    if total_hours > 24.0:
+        warnings.append(
+            f"Contradictory schedule: total allocated hours ({round(total_hours, 1)}h) exceed 24 hours. "
+            f"Check if work/study screen time was accidentally counted twice."
+        )
+
+    return sanitized, warnings
+
+
+def local_predict(routine: dict, warnings: list = None) -> dict:
     """Compute productivity score, insights, and breakdown locally using exact model weights."""
-    sleep = float(routine.get("sleep_hours", 7.0))
-    study = float(routine.get("study_hours", 4.0))
-    exercise = float(routine.get("exercise_minutes", 30.0))
-    screen = float(routine.get("screen_time_hours", 4.0))
-    social = float(routine.get("social_media_hours", 2.0))
-    breaks = int(routine.get("breaks_taken", 3))
-    mood = int(routine.get("mood_level", 7))
+    sleep = routine["sleep_hours"]
+    study = routine["study_hours"]
+    exercise = routine["exercise_minutes"]
+    screen = routine["screen_time_hours"]
+    social = routine["social_media_hours"]
+    breaks = routine["breaks_taken"]
+    mood = routine["mood_level"]
 
     # Linear regression formula evaluated against trained weights
     raw_score = (
@@ -107,11 +163,11 @@ def local_predict(routine: dict) -> dict:
     if study < 3:
         suggestions.append("Block out at least two dedicated 60-minute deep work sessions.")
     if exercise < 30:
-        suggestions.append(f"Add a 15–20 minute brisk walk to activate physical energy.")
+        suggestions.append("Add a 15–20 minute brisk walk to activate physical energy.")
     if screen > 5:
-        suggestions.append(f"Cap passive screen consumption by {round(screen - 4, 1)}h using app limiters.")
+        suggestions.append(f"Cap passive screen consumption by {max(0.5, round(screen - 4, 1))}h using app limiters.")
     if social > 1.5:
-        suggestions.append(f"Reduce social media by {round(social - 1, 1)}h, especially during the first hour after waking.")
+        suggestions.append(f"Reduce social media by {max(0.5, round(social - 1, 1))}h, especially during the first hour after waking.")
     if breaks < 3:
         suggestions.append("Adopt a 50/10 focus cycle (50m deep work, 10m off-screen recovery).")
     if mood < 6:
@@ -120,17 +176,17 @@ def local_predict(routine: dict) -> dict:
     if not suggestions and score >= 80:
         suggestions.append("Routine is in an optimal zone. Maintain current pacing to avoid over-exertion.")
 
-    # Factor contribution breakdown
+    # Factor contribution breakdown (normalized percentages)
     breakdown = {
-        "sleep": min(int((sleep / 9) * 25), 25),
-        "study": min(int((study / 10) * 35), 35),
-        "exercise": min(int((exercise / 90) * 15), 15),
+        "sleep": max(0, min(int((sleep / 9) * 25), 25)),
+        "study": max(0, min(int((study / 10) * 35), 35)),
+        "exercise": max(0, min(int((exercise / 90) * 15), 15)),
         "screen_time": -min(int((screen / 16) * 15), 15),
         "social_media": -min(int((social / 8) * 10), 10),
-        "mood": min(int((mood / 10) * 20), 20),
+        "mood": max(0, min(int((mood / 10) * 20), 20)),
     }
 
-    return {
+    output = {
         "productivity_score": score,
         "category": category,
         "insights": insights,
@@ -138,32 +194,38 @@ def local_predict(routine: dict) -> dict:
         "score_breakdown": breakdown,
         "engine": "local_trained_linear_weights",
     }
+    if warnings:
+        output["validation_warnings"] = warnings
+
+    return output
 
 
-def remote_predict(routine: dict, api_url: str) -> dict:
+def remote_predict(routine: dict, api_url: str, warnings: list = None) -> dict:
     """Send prediction request to live ProductivAI backend API."""
     url = f"{api_url.rstrip('/')}/predict"
     payload = json.dumps(routine).encode("utf-8")
     req = urllib.request.Request(
         url,
         data=payload,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "User-Agent": "ProductivAI-AgentSkill/2.1.0"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=5) as response:
+    with urllib.request.urlopen(req, timeout=4) as response:
         data = json.loads(response.read().decode("utf-8"))
         data["engine"] = "live_cloud_api"
+        if warnings:
+            data["validation_warnings"] = warnings
         return data
 
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate daily productivity metrics with ProductivAI.")
-    parser.add_argument("--sleep", type=float, default=None, help="Sleep duration in hours (2-12)")
-    parser.add_argument("--study", type=float, default=None, help="Active study/work in hours (0-14)")
-    parser.add_argument("--exercise", type=float, default=None, help="Exercise in minutes (0-120)")
-    parser.add_argument("--screen", type=float, default=None, help="Non-work screen time in hours (0-16)")
-    parser.add_argument("--social", type=float, default=None, help="Social media scrolling in hours (0-8)")
-    parser.add_argument("--breaks", type=int, default=None, help="Meaningful breaks taken (0-10)")
+    parser.add_argument("--sleep", type=float, default=None, help="Sleep duration in hours (0-16)")
+    parser.add_argument("--study", type=float, default=None, help="Active study/work in hours (0-16)")
+    parser.add_argument("--exercise", type=float, default=None, help="Exercise in minutes (0-240)")
+    parser.add_argument("--screen", type=float, default=None, help="Passive recreational screen time in hours (0-24)")
+    parser.add_argument("--social", type=float, default=None, help="Social media scrolling in hours (0-24)")
+    parser.add_argument("--breaks", type=int, default=None, help="Meaningful breaks taken (0-20)")
     parser.add_argument("--mood", type=int, default=None, help="Subjective mood/energy rating (1-10)")
     parser.add_argument("--json", type=str, default=None, help="JSON string with routine metrics")
     parser.add_argument("--api-url", type=str, default="https://productivai.onrender.com", help="ProductivAI API endpoint")
@@ -173,36 +235,39 @@ def main():
     args = parser.parse_args()
 
     # Assemble routine inputs
-    routine = dict(DEFAULT_ROUTINE)
+    raw_routine = dict(DEFAULT_ROUTINE)
 
     if args.json:
         try:
             parsed = json.loads(args.json)
-            routine.update(parsed)
+            raw_routine.update(parsed)
         except Exception as e:
             sys.stderr.write(f"Error parsing --json argument: {e}\n")
             sys.exit(1)
 
-    if args.sleep is not None: routine["sleep_hours"] = args.sleep
-    if args.study is not None: routine["study_hours"] = args.study
-    if args.exercise is not None: routine["exercise_minutes"] = args.exercise
-    if args.screen is not None: routine["screen_time_hours"] = args.screen
-    if args.social is not None: routine["social_media_hours"] = args.social
-    if args.breaks is not None: routine["breaks_taken"] = args.breaks
-    if args.mood is not None: routine["mood_level"] = args.mood
+    if args.sleep is not None: raw_routine["sleep_hours"] = args.sleep
+    if args.study is not None: raw_routine["study_hours"] = args.study
+    if args.exercise is not None: raw_routine["exercise_minutes"] = args.exercise
+    if args.screen is not None: raw_routine["screen_time_hours"] = args.screen
+    if args.social is not None: raw_routine["social_media_hours"] = args.social
+    if args.breaks is not None: raw_routine["breaks_taken"] = args.breaks
+    if args.mood is not None: raw_routine["mood_level"] = args.mood
+
+    # Validate and sanitize
+    routine, warnings = validate_and_sanitize(raw_routine)
 
     # Attempt live API inference unless offline is requested
     result = None
     if not args.offline and args.api_url:
         try:
-            result = remote_predict(routine, args.api_url)
+            result = remote_predict(routine, args.api_url, warnings)
         except (urllib.error.URLError, TimeoutError, Exception) as e:
             sys.stderr.write(f"[Notice] Cloud API unavailable ({e}). Gracefully falling back to local model.\n")
             result = None
 
     # Fallback to local computation
     if result is None:
-        result = local_predict(routine)
+        result = local_predict(routine, warnings)
 
     # Output results
     if args.format == "json":
@@ -210,6 +275,10 @@ def main():
     else:
         print(f"\nProductivity Score: {result['productivity_score']}/100 ({result['category']})")
         print(f"Engine: {result.get('engine')}")
+        if result.get("validation_warnings"):
+            print("\nValidation Warnings:")
+            for w in result["validation_warnings"]:
+                print(f"  ⚠ {w}")
         print("\nInsights:")
         for ins in result["insights"]:
             print(f"  • {ins}")
@@ -223,4 +292,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

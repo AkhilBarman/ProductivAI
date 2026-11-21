@@ -37,7 +37,7 @@ To provide individuals (students, remote workers, engineers, and professionals) 
 
 ### Core Functionality
 - **Multi-Factor Input Interface**: Interactive controls (dual-bound range sliders and number inputs) allowing users to configure 7 daily routine variables with verified bounds.
-- **Machine Learning Inference**: Real-time evaluation using a trained Scikit-learn regression model (`RandomForestRegressor`) predicting a continuous productivity score clipped between 0 and 100.
+- **Machine Learning Inference**: Real-time evaluation using a trained Scikit-learn regression model (`LinearRegression`, selected over `RandomForestRegressor` due to optimal $R^2 = 0.9365$ on synthetic data) predicting a continuous productivity score clipped between 0 and 100.
 - **Productivity Categorization**: Automatic classification into three distinct tiers:
   - `High Productivity` ($\ge 75$)
   - `Moderate Productivity` ($45 \text{ to } 74$)
@@ -86,7 +86,7 @@ To provide individuals (students, remote workers, engineers, and professionals) 
 │                 ML Inference Engine                    │
 │                                                        │
 │   • Serialized Model: productivity_model.pkl           │
-│   • Architecture: Scikit-learn RandomForestRegressor   │
+│   • Architecture: Scikit-learn LinearRegression (R² = 0.9365) │
 │   • 7 Ordered Features -> Clipped Score [0, 100]       │
 └────────────────────────────────────────────────────────┘
 ```
@@ -119,7 +119,7 @@ ProductivAI/
 │   │   ├── generate_dataset.py     # Deterministic generator script creating 50,000 synthetic records
 │   │   └── productivity_dataset.csv# Pre-generated 50K CSV dataset with routine features and target score
 │   ├── models/
-│   │   └── productivity_model.pkl  # Trained, serialized Scikit-learn RandomForestRegressor model
+│   │   └── productivity_model.pkl  # Trained, serialized Scikit-learn LinearRegression model (R² = 0.9365)
 │   ├── database.py                 # SQLite session storage, trend query operations, aggregate statistics
 │   ├── main.py                     # FastAPI application: CORS, schemas, endpoints, insight rules
 │   ├── model_training.py           # Training pipeline: trains LinearRegression & RandomForest, saves best
@@ -505,7 +505,7 @@ cd ProductivAI
 ## 8. ML and Data Integrity Rules
 
 ### Model Architecture and Artifacts
-- **Model Type**: Scikit-learn `RandomForestRegressor` (`n_estimators=100`, `max_depth=12`, `random_state=42`).
+- **Model Type**: Scikit-learn `LinearRegression` (auto-selected by `model_training.py` with test $R^2 = 0.9365$, outperforming `RandomForestRegressor` with $R^2 = 0.8887$).
 - **Model Artifact**: Serialized pickle file at `backend/models/productivity_model.pkl`.
 - **Input Features (STRICT ORDER REQUIRED)**:
   1. `sleep_hours` (float)
@@ -683,7 +683,7 @@ The following limitations were identified during the Phase 1 audit and implement
    - *Status*: Resolved — refined `frontend/eslint.config.js` and removed unused variables; `npm run lint` now passes with 0 errors and 0 warnings.
 5. **Heuristic Explanations vs. True Model Explainability**:
    - `compute_breakdown()`, `generate_insights()`, and `generate_suggestions()` use handcrafted mathematical heuristics rather than model feature importances (e.g., Tree SHAP or permutation importances).
-   - *Remediation*: Plan a migration in future phases to extract feature contributions directly from the Random Forest model.
+   - *Remediation*: Plan a migration in future phases to extract feature contributions directly from model weights or SHAP explanations.
 6. **Frontend Bundle Chunk Size & Code-Splitting** `[RESOLVED]`:
    - Formerly bundled all pages and charts into a single monolithic $\approx 760\text{ kB}$ chunk.
    - *Status*: Resolved — route-based code-splitting implemented via `React.lazy()` for `DashboardPage`, `AnalysisPage`, and `AboutPage`; main entry chunk reduced to $234\text{ kB}$ (gzip $75\text{ kB}$), eliminating the Vite chunk size warning.

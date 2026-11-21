@@ -123,7 +123,7 @@ function EmptyStatePrompt({ onSelectPreset }) {
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Trained ML Inference</span>
           </div>
           <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-            Continuous regression scoring evaluated through Scikit-learn Random Forest regressor.
+            Continuous regression scoring evaluated through trained Scikit-learn regression model.
           </p>
         </div>
 

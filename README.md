@@ -33,7 +33,7 @@ You don't need to visit the website or configure sliders. You can tell your AI a
 ### 3-Tier Execution Hierarchy (Zero Hard Dependencies)
 - **Tier 1 (Instant Conversational)**: The agent uses native reasoning and the provided `references/` guides to troubleshoot habits, build schedules, and diagnose focus issues with **zero external tools**.
 - **Tier 2 (Local Mathematical Engine)**: Using `scripts/evaluate_routine.py --offline`, the agent computes exact machine-learning weights locally with standard Python (no pip packages required).
-- **Tier 3 (Live Cloud ML Model)**: Connects to the live FastAPI backend (`https://productivai.onrender.com`) to evaluate predictions through the cloud Random Forest regressor and access historical logs.
+- **Tier 3 (Live Cloud ML Model)**: Connects to the live FastAPI backend (`https://productivai.onrender.com`) to evaluate predictions through the cloud Scikit-learn regression model and access historical logs.
 
 ---
 

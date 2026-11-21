@@ -40,7 +40,7 @@ ProductivAI is designed to operate seamlessly across three tiers of environment 
 ```
 ┌────────────────────────────────────────────────────────┐
 │  Tier 3: Live Cloud API (https://productivai.onrender.com)
-│  • Full Scikit-learn Random Forest model inference
+│  • Full Scikit-learn regression model inference (Linear Regression, R² ≈ 0.94)
 │  • Persistent SQLite historical session logging
 └──────────────────────────┬─────────────────────────────┘
                            │ Fallback if API offline / unconfigured
@@ -87,7 +87,7 @@ Do **not** interrogate the user with a 7-question questionnaire. Extract paramet
 ### Workflow A: Daily Productivity Analysis
 1. Extract or confirm the 7 daily metrics.
 2. Evaluate score and breakdown using:
-   - Tool call: `python agent-skill/scripts/evaluate_routine.py --json '<json>'` (or execute via API `POST https://productivai.onrender.com/predict`).
+   - Tool call: `python scripts/evaluate_routine.py --json '<json>'` (or `python agent-skill/scripts/evaluate_routine.py --json '<json>'` from repository root) or execute via API `POST https://productivai.onrender.com/predict`.
    - Or conversational rubric calculation using `references/scoring_rubric.md`.
 3. Format output strictly following the **Daily Analysis Response Structure** below.
 

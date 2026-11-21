@@ -37,7 +37,7 @@ export default function AboutPage() {
           <BarChart3 size={20} color="#60a5fa" /> Project Overview
         </motion.h2>
         <motion.p variants={fadeUp} custom={1} style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.75, margin: '0 0 10px 0' }}>
-          Users enter daily routine metrics — sleep, study hours, exercise, screen time, social media usage, breaks, and mood level. A trained Random Forest model predicts a productivity score and the system generates AI insights and improvement suggestions.
+          Users enter daily routine metrics — sleep, study hours, exercise, screen time, social media usage, breaks, and mood level. A trained Scikit-learn regression model predicts a productivity score and the system generates AI insights and improvement suggestions.
         </motion.p>
         <motion.p variants={fadeUp} custom={2} style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.75, margin: 0 }}>
           Results include an animated circular meter, score breakdown chart, insight cards, and actionable recommendations — all in a sleek, theme-switchable dashboard.
