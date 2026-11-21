@@ -43,6 +43,24 @@ model = None
 @app.on_event("startup")
 def load_model():
     global model
+    if not os.path.exists(MODEL_PATH):
+        print(f"⚠️ Model artifact not found at {MODEL_PATH}. Generating on the fly...")
+        dataset_path = os.path.join(os.path.dirname(__file__), "dataset", "productivity_dataset.csv")
+        if not os.path.exists(dataset_path):
+            try:
+                from backend.dataset.generate_dataset import generate_dataset
+            except ImportError:
+                from dataset.generate_dataset import generate_dataset
+            df = generate_dataset()
+            os.makedirs(os.path.dirname(dataset_path), exist_ok=True)
+            df.to_csv(dataset_path, index=False)
+
+        try:
+            from backend.model_training import train_and_evaluate
+        except ImportError:
+            from model_training import train_and_evaluate
+        train_and_evaluate()
+
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
     print("✅ Model loaded successfully")
